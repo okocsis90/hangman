@@ -27,7 +27,7 @@ def print_word(to_guess):
     words = to_guess.split()
     word_to_display = []
     for word in words:
-        if word == "!" or word == "?":
+        if word == "!" or word == "?" or word == ",":
             word_to_display.append(word)
         else:
             word_to_display.append(["_ "] * len(word))
