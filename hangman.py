@@ -9,8 +9,8 @@ import random
 def player_guess(word_to_display):
     while True:
         try:
-            input_guess = input("Please enter a letter a-z: ")
-            if input_guess.isdigit() or len(input_guess) != 1:
+            input_guess = data_manager.get_input("Please enter a letter a-z: ")
+            if len(input_guess) != 1:
                 raise ValueError
             for word in word_to_display:
                 if input_guess in word:
@@ -19,10 +19,6 @@ def player_guess(word_to_display):
         except ValueError:
             print("Please try again!")
             continue
-        except (KeyboardInterrupt, EOFError):
-            os.system('clear')
-            print("\nbye")
-            quit()
     return input_guess.lower()
 
 
@@ -31,7 +27,10 @@ def print_word(to_guess):
     words = to_guess.split()
     word_to_display = []
     for word in words:
-        word_to_display.append(["_ "] * len(word))
+        if word == "!" or word == "?":
+            word_to_display.append(word)
+        else:
+            word_to_display.append(["_ "] * len(word))
     return word_to_display
 
 
@@ -69,15 +68,11 @@ def print_table(word_to_display, lives):
 
 # Check if the player wants to play again
 def wanna_play_again():
-    play_again = None
-    while not (play_again == "y" or play_again == "n"):
-        try:
-            play_again = input("Do you want to play again? (y/n): ")
-            if play_again.isdigit():
-                raise ValueError
-        except ValueError:
-            print("y or n please!")
-            continue
+    while True:
+        play_again = data_manager.get_input("Do you want to play again? (y/n): ")
+        if play_again == "y" or play_again == "n":
+            break
+        print("'y' or 'n' please!")
     if play_again == "y":
         return True
     else:
@@ -87,15 +82,11 @@ def wanna_play_again():
 
 # player chooses a mode (easy, medium or hard)
 def mode():
-    current_mode = None
-    while not (current_mode == "e" or current_mode == "m" or current_mode == "h"):
-        try:
-            current_mode = input("Choose a mode: easy ('e'), medium ('m') or hard ('h'): ")
-            if current_mode.isdigit():
-                raise ValueError
-        except ValueError:
-            print("'e' or 'm' or 'h' please!")
-            continue
+    while True:
+        current_mode = data_manager.get_input("Choose a mode: easy ('e'), medium ('m') or hard ('h'): ")
+        if current_mode == "e" or current_mode == "m" or current_mode == "h":
+            break
+        print("'e', 'm' or 'h' please!")
     return current_mode
 
 
@@ -104,7 +95,7 @@ def mode():
 def init_game():
     while True:
         try:
-            filename = input("please enter a filename: ")
+            filename = data_manager.get_input("please enter a filename: ")
             sentences = data_manager.get_sentence_from_file(filename)
             break
         except (TypeError, FileNotFoundError):
