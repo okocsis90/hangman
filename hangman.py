@@ -55,10 +55,11 @@ def change_word_to_display(guess, word_to_display, to_guess, lives):
 
 # print the table: clear the terminal, print the name of the game and quit option,
 # print the lives left. Then the word which has to be guessed.
-def print_table(word_to_display, lives):
+def print_table(word_to_display, lives, type_to_guess):
     os.system('clear')
     print("Hangman by Oli. Press ctrl + d to quit")
     print("\n")
+    print(type_to_guess + ":" + "\n")
     print("Total guesses left: {}".format(lives))
     print()
     for word in word_to_display:
@@ -76,6 +77,7 @@ def wanna_play_again():
     if play_again == "y":
         return True
     else:
+        os.system('clear')
         print("See ya!")
         return False
 
@@ -101,7 +103,9 @@ def init_game():
         except (TypeError, FileNotFoundError):
             print("Oops, no such file. Please try again!")
             continue
-    to_guess = random.choice(sentences)
+    whole_sentence = random.choice(sentences)
+    type_to_guess = whole_sentence.split(";")[0]
+    to_guess = whole_sentence.split(";")[1]
     word_to_display = print_word(to_guess)
     current_mode = mode()
     if current_mode == "h":
@@ -110,21 +114,22 @@ def init_game():
         total_lives = 8
     elif current_mode == "e":
         total_lives = 10
-    return to_guess, word_to_display, total_lives
+    return type_to_guess, to_guess, word_to_display, total_lives
 
 
 # Check if the game has come to an end:
-def check_if_won(word_to_display, total_lives):
+def check_if_won(word_to_display, total_lives, type_to_guess, to_guess):
     # First, we check if the player lost (has no lives left)
     if total_lives == 0:
-        print("Too bad, GAME OVER!")
+        os.system('clear')
+        print("Too bad, GAME OVER! The solution was: %s" % to_guess)
         return True
     # Check if we have any empty letters to guess:
     for word in word_to_display:
         if "_ " in word:
             return False
     # If not, then player won
-    print_table(word_to_display, total_lives)
+    print_table(word_to_display, total_lives, type_to_guess)
     print("Congrats pal, you won!")
     return True
 
@@ -135,14 +140,14 @@ def check_if_won(word_to_display, total_lives):
 # - check if the player won / lose
 # - if so, check if he wants to play again
 def main():
-    to_guess, word_to_display, total_lives = init_game()
+    type_to_guess, to_guess, word_to_display, total_lives = init_game()
     while True:
-        print_table(word_to_display, total_lives)
+        print_table(word_to_display, total_lives, type_to_guess)
         word_to_display, total_lives = change_word_to_display(
             player_guess(word_to_display), word_to_display, to_guess, total_lives)
-        if check_if_won(word_to_display, total_lives):
+        if check_if_won(word_to_display, total_lives, type_to_guess, to_guess):
             if wanna_play_again():
-                to_guess, word_to_display, total_lives = init_game()
+                type_to_guess, to_guess, word_to_display, total_lives = init_game()
             else:
                 break
 
