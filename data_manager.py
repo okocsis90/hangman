@@ -9,6 +9,13 @@ def get_sentence_from_file(file_name):
     return table
 
 
+def save_data_to_file(file_name, data):
+    with open(file_name, "w") as file:
+        for record in data:
+            row = ';'.join(record)
+            file.write(row + "\n")
+
+
 # get inputs and examine if OK:
 def get_input(input_message):
     while True:

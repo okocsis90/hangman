@@ -55,9 +55,10 @@ def change_word_to_display(guess, word_to_display, to_guess, lives):
 
 # print the table: clear the terminal, print the name of the game and quit option,
 # print the lives left. Then the word which has to be guessed.
-def print_table(word_to_display, lives, type_to_guess):
+def print_table(word_to_display, lives, type_to_guess, name, score):
     os.system('clear')
     print("Hangman by Oli. Press ctrl + d to quit")
+    print("User: %s\nScore: %s" % (name, score))
     print("\n")
     print(type_to_guess + ":" + "\n")
     print("Total guesses left: {}".format(lives))
@@ -114,11 +115,11 @@ def init_game():
         total_lives = 8
     elif current_mode == "e":
         total_lives = 10
-    return type_to_guess, to_guess, word_to_display, total_lives
+    return current_mode, type_to_guess, to_guess, word_to_display, total_lives
 
 
 # Check if the game has come to an end:
-def check_if_won(word_to_display, total_lives, type_to_guess, to_guess):
+def check_if_won(word_to_display, total_lives, type_to_guess, to_guess, name, score, current_mode, dict_all_names):
     # First, we check if the player lost (has no lives left)
     if total_lives == 0:
         os.system('clear')
@@ -129,9 +130,53 @@ def check_if_won(word_to_display, total_lives, type_to_guess, to_guess):
         if "_ " in word:
             return False
     # If not, then player won
-    print_table(word_to_display, total_lives, type_to_guess)
+    print_table(word_to_display, total_lives, type_to_guess, name, score)
+    score_gets_higher(name, score, current_mode, dict_all_names)
     print("Congrats pal, you won!")
     return True
+
+
+def read_user_data():
+    all_names = data_manager.get_sentence_from_file("export.csv")
+    dict_all_names = {}
+    for i in all_names:
+        dict_all_names.update({i.split(";")[0]: i.split(";")[1]})
+    names = []
+    for i in dict_all_names.keys():
+        names.append(i)
+
+
+def enter_name():
+    all_names = data_manager.get_sentence_from_file("export.csv")
+    dict_all_names = {}
+    for i in all_names:
+        dict_all_names.update({i.split(";")[0]: i.split(";")[1]})
+    names = []
+    for i in dict_all_names.keys():
+        names.append(i)
+    print()
+    for i, name in enumerate(names, 1):
+        print(i, ": ", name, "score: ", dict_all_names[name])
+    new_name = data_manager.get_input("Please enter your name, or choose from the existing names: ")
+    for n in names:
+        if n == new_name:
+            score = dict_all_names[n]
+            return dict_all_names, n, score
+    score = 0
+    return dict_all_names, new_name, score
+
+
+def score_gets_higher(name, score, current_mode, dict_all_names):
+    if current_mode == "e":
+        dict_all_names[name] = int(score) + 1
+    elif current_mode == "m":
+        dict_all_names[name] = int(score) + 2
+    elif current_mode == "h":
+        dict_all_names[name] = int(score) + 3
+    list_of_names = []
+    for k, v in dict_all_names.items():
+        list_of_names.append([k, str(v)])
+    data_manager.save_data_to_file("export.csv", list_of_names)
 
 
 # We initialize the game, then in the main loop:
@@ -140,14 +185,16 @@ def check_if_won(word_to_display, total_lives, type_to_guess, to_guess):
 # - check if the player won / lose
 # - if so, check if he wants to play again
 def main():
-    type_to_guess, to_guess, word_to_display, total_lives = init_game()
+    dict_all_names, name, score = enter_name()
+    current_mode, type_to_guess, to_guess, word_to_display, total_lives = init_game()
     while True:
-        print_table(word_to_display, total_lives, type_to_guess)
+        print_table(word_to_display, total_lives, type_to_guess, name, score)
         word_to_display, total_lives = change_word_to_display(
             player_guess(word_to_display), word_to_display, to_guess, total_lives)
-        if check_if_won(word_to_display, total_lives, type_to_guess, to_guess):
+        if check_if_won(word_to_display, total_lives, type_to_guess, to_guess, name, score, current_mode, dict_all_names):
             if wanna_play_again():
-                type_to_guess, to_guess, word_to_display, total_lives = init_game()
+                current_mode, type_to_guess, to_guess, word_to_display, total_lives = init_game()
+                dict_all_names, name, score = enter_name()
             else:
                 break
 
