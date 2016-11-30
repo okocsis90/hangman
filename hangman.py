@@ -94,7 +94,7 @@ def mode():
 
 
 # Initializing the game: setting the word to be guessed,
-# change it to empty characters, and setting lives.
+# change it to empty characters.
 def init_game():
     while True:
         try:
@@ -108,6 +108,11 @@ def init_game():
     type_to_guess = whole_sentence.split(";")[0]
     to_guess = whole_sentence.split(";")[1]
     word_to_display = print_word(to_guess)
+    return type_to_guess, to_guess, word_to_display
+
+
+# initializing total lives
+def init_lives():
     current_mode = mode()
     if current_mode == "h":
         total_lives = 5
@@ -115,7 +120,7 @@ def init_game():
         total_lives = 8
     elif current_mode == "e":
         total_lives = 10
-    return current_mode, type_to_guess, to_guess, word_to_display, total_lives
+    return total_lives, current_mode
 
 
 # Check if the game has come to an end:
@@ -136,16 +141,7 @@ def check_if_won(word_to_display, total_lives, type_to_guess, to_guess, name, sc
     return True
 
 
-def read_user_data():
-    all_names = data_manager.get_sentence_from_file("export.csv")
-    dict_all_names = {}
-    for i in all_names:
-        dict_all_names.update({i.split(";")[0]: i.split(";")[1]})
-    names = []
-    for i in dict_all_names.keys():
-        names.append(i)
-
-
+# asks player to enter a name or choose an existing one from the file
 def enter_name():
     all_names = data_manager.get_sentence_from_file("export.csv")
     dict_all_names = {}
@@ -156,7 +152,7 @@ def enter_name():
         names.append(i)
     print()
     for i, name in enumerate(names, 1):
-        print(i, ": ", name, "score: ", dict_all_names[name])
+        print(i, ": ", name, "; score: ", dict_all_names[name])
     new_name = data_manager.get_input("Please enter your name, or choose from the existing names: ")
     for n in names:
         if n == new_name:
@@ -166,6 +162,7 @@ def enter_name():
     return dict_all_names, new_name, score
 
 
+# saves score of the player to our csv file.
 def score_gets_higher(name, score, current_mode, dict_all_names):
     if current_mode == "e":
         dict_all_names[name] = int(score) + 1
@@ -186,14 +183,16 @@ def score_gets_higher(name, score, current_mode, dict_all_names):
 # - if so, check if he wants to play again
 def main():
     dict_all_names, name, score = enter_name()
-    current_mode, type_to_guess, to_guess, word_to_display, total_lives = init_game()
+    type_to_guess, to_guess, word_to_display = init_game()
+    total_lives, current_mode = init_lives()
     while True:
         print_table(word_to_display, total_lives, type_to_guess, name, score)
         word_to_display, total_lives = change_word_to_display(
             player_guess(word_to_display), word_to_display, to_guess, total_lives)
         if check_if_won(word_to_display, total_lives, type_to_guess, to_guess, name, score, current_mode, dict_all_names):
             if wanna_play_again():
-                current_mode, type_to_guess, to_guess, word_to_display, total_lives = init_game()
+                type_to_guess, to_guess, word_to_display = init_game()
+                total_lives, current_mode = init_lives()
                 dict_all_names, name, score = enter_name()
             else:
                 break
